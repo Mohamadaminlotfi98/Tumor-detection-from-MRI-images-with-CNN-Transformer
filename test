@@ -1,0 +1,34 @@
+def test(model, test_loader):
+  """Tests the CNNTransformer model on the given test loader.
+
+  Args:
+    model: The CNNTransformer model.
+    test_loader: The test loader.
+
+  Returns:
+    A tuple containing the average loss and accuracy on the test set.
+  """
+
+  model.eval()  # Set the model to evaluation mode
+
+  total_loss = 0.0
+  correct = 0
+  total = 0
+
+  with torch.no_grad():
+    for batch_data, batch_label in test_loader:
+      batch_data = batch_data.to(device)
+      outputs = model(batch_data)
+
+      loss = loss_function(outputs, batch_label)
+
+      total_loss += loss.item()
+
+      _, predicted = torch.max(outputs.data, 1)
+      total += batch_label.size(0)
+      correct += (predicted == batch_label).sum().item()
+
+  avg_loss = total_loss / len(test_loader)
+  accuracy = 100 * correct / total
+
+  return avg_loss, accuracy
