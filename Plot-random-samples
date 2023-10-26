@@ -1,0 +1,20 @@
+# Assuming you have a data_loader with your dataset
+data_loader = DataLoader(dataset, batch_size=20, shuffle=True)
+# Get a batch of 20 images and labels
+images, labels = next(iter(data_loader))
+
+# Define the number of rows and columns for the grid
+num_rows = 5
+num_cols = 4
+
+# Create a new figure
+plt.figure(figsize=(12, 12))
+
+for i in range(20):
+    plt.subplot(num_rows, num_cols, i + 1)
+    plt.imshow(images[i].permute(1, 2, 0))  # Convert the image to displayable format
+    plt.title(f"Label: {labels[i]}")
+    plt.axis('off')
+
+plt.tight_layout()
+plt.show()
