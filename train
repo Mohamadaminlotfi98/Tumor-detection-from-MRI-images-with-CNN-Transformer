@@ -1,0 +1,60 @@
+# Define the loss function
+loss_function = nn.CrossEntropyLoss()
+
+# Define the optimizer
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+epochs = 10
+
+# Define your model, loss_function, optimizer, and other settings here
+
+# Create data loaders for training, evaluation, and testing as shown in the previous code snippet
+
+for epoch in range(epochs):
+    # Training Phase
+    model.train()  # Set the model to training mode
+    running_loss = 0.0
+
+    epoch_progress = tqdm(enumerate(train_loader), total=len(train_loader), desc=f"Epoch {epoch+1}/{epochs}", unit="batch")
+
+    for batch_idx, (batch_data, batch_label) in epoch_progress:
+        batch_label = batch_label.long().to(device)
+        batch_data = batch_data[:, :3, :, :]
+        batch_data = batch_data.to(device).float()  # Convert input data to float
+        outputs = model(batch_data)
+        loss = loss_function(outputs, batch_label)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        running_loss += loss.item()
+        epoch_progress.set_postfix({"Train Loss": loss.item()})
+
+    train_loss = running_loss / len(train_loader)
+
+    # Evaluation Phase
+    model.eval()  # Set the model to evaluation mode
+    eval_loss = 0.0
+    correct = 0  # Initialize correct only here
+    total = 0
+
+    with torch.no_grad():
+        for batch_data, batch_label in eval_loader:
+            # Convert the input tensors to float.
+            batch_data = batch_data[:, :3, :, :]
+            batch_data = batch_data.to(device).float()  # Convert input data to float            
+            outputs = model(batch_data)
+            batch_label = batch_label.long().to(device)
+            loss = loss_function(outputs, batch_label)
+
+            eval_loss += loss.item()
+
+            _, predicted = torch.max(outputs.data, 1)
+            total += batch_label.size(0)
+            correct += (predicted == batch_label).sum().item()
+
+    eval_loss = eval_loss / len(eval_loader)
+    accuracy = 100 * correct / total
+
+    print(f"Epoch [{epoch+1}/{epochs}] - Train Loss: {train_loss:.4f}, Eval Loss: {eval_loss:.4f}, Accuracy: {accuracy:.2f}%")
