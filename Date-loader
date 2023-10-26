@@ -1,0 +1,41 @@
+class ImageFolderWithFolderNumber(Dataset):
+    def __init__(self, root_dir, transform=None):
+        self.root_dir = root_dir
+        self.transform = transform
+
+        # Get all the image paths in the dataset
+        self.image_paths = []
+        for folder_num in range(1, 4):
+            folder_path = os.path.join(self.root_dir, str(folder_num))
+            for image_path in os.listdir(folder_path):
+                self.image_paths.append(os.path.join(folder_path, image_path))
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, index):
+        image_path = self.image_paths[index]
+
+        # Load the image using PIL
+        image = Image.open(image_path)
+
+        # Apply transformations to the image, if any
+        if self.transform is not None:
+            image = self.transform(image)
+
+        # Get the label of the image, which is the folder number
+        label = int(image_path.split("/")[-2])
+        label = label-1
+
+        return image, label
+
+# Create a transform to resize and normalize the images
+transform = T.Compose([
+    T.Resize((224, 224)),
+    T.ToTensor()])
+
+# Create a dataset object
+dataset = ImageFolderWithFolderNumber(root_dir="./MRI", transform=transform)
+
+# Create a data loader
+data_loader = DataLoader(dataset, batch_size=32, shuffle=True,num_workers=2)
